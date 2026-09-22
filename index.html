@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#071111" />
+  <meta name="description" content="Odd Earth Sensorium — calibrated human capability training for heart, lungs, echolocation and pulse." />
+  <title>Odd Earth // Sensorium</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Odd Earth home">
+      <span class="brand-mark">O E</span>
+      <span><strong>ODD EARTH</strong><small>Human Instrumentation</small></span>
+    </a>
+    <nav>
+      <a href="#sensorium">Sensorium</a>
+      <a href="#method">Method</a>
+      <a href="#profile">Profile</a>
+      <a href="#science">Science</a>
+    </nav>
+    <button class="ghost small" id="resetDataBtn" title="Reset local training data">Reset local data</button>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">THE HUMAN IS THE INSTRUMENT</p>
+        <h1>Train the senses.<br/><em>Measure the human.</em></h1>
+        <p class="lede">Odd Earth builds calibrated human capabilities: standardized stimuli, adaptive psychophysics, blind testing and real-world transfer.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#sensorium">Enter Sensorium</a>
+          <a class="button ghost" href="#method">How it works</a>
+        </div>
+        <div class="hero-metrics">
+          <div><span>04</span><small>training channels</small></div>
+          <div><span>01</span><small>human instrument profile</small></div>
+          <div><span>∞</span><small>capabilities to map</small></div>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="orbit orbit-a"></div>
+        <div class="orbit orbit-b"></div>
+        <div class="human-core">
+          <span class="node n1"></span><span class="node n2"></span><span class="node n3"></span><span class="node n4"></span>
+          <div class="silhouette"></div>
+        </div>
+        <div class="sense-label sl-heart">HEART <b>listen</b></div>
+        <div class="sense-label sl-lung">LUNGS <b>resolve</b></div>
+        <div class="sense-label sl-echo">ECHO <b>map</b></div>
+        <div class="sense-label sl-pulse">PULSE <b>feel</b></div>
+      </div>
+    </section>
+
+    <section class="section intro" id="method">
+      <p class="eyebrow">ODD EARTH PROTOCOL</p>
+      <h2>Not brain training. <span>Human metrology.</span></h2>
+      <div class="method-grid">
+        <article><span>01</span><h3>Stimulus</h3><p>Present a controlled physiological or spatial signal.</p></article>
+        <article><span>02</span><h3>Judgment</h3><p>Force a decision before revealing the answer.</p></article>
+        <article><span>03</span><h3>Confidence</h3><p>Measure whether you know when you know.</p></article>
+        <article><span>04</span><h3>Feedback</h3><p>Reveal ground truth immediately and specifically.</p></article>
+        <article><span>05</span><h3>Adapt</h3><p>Difficulty follows your threshold, not a fixed lesson plan.</p></article>
+        <article><span>06</span><h3>Transfer</h3><p>Ultimately validate on unseen people, environments and cases.</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="sensorium">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">SENSORIUM V0.2</p>
+          <h2>Four channels. One nervous system.</h2>
+        </div>
+        <div class="status-pill"><span></span> Browser training engine live</div>
+      </div>
+
+      <div class="module-grid">
+        <article class="module-card heart" data-module="heart">
+          <div class="module-number">01</div>
+          <div class="module-icon">♥</div>
+          <p class="eyebrow">HEART // AUDITORY</p>
+          <h3>Hear physiology</h3>
+          <p>Train normal vs murmur discrimination using curated CirCor DigiScope recordings.</p>
+          <dl><div><dt>v0.2 task</dt><dd>Murmur / normal</dd></div><div><dt>output</dt><dd>Accuracy · RT · confidence</dd></div></dl>
+          <button class="button primary module-start" data-module="heart">Train Heart</button> <button class="button ghost module-eval" data-module="heart">Blind benchmark</button>
+        </article>
+
+        <article class="module-card lung" data-module="lung">
+          <div class="module-number">02</div>
+          <div class="module-icon">◌</div>
+          <p class="eyebrow">LUNGS // AUDITORY</p>
+          <h3>Resolve breath</h3>
+          <p>Discriminate normal breathing, wheeze and crackles from event-labelled SPRSound recordings.</p>
+          <dl><div><dt>v0.2 task</dt><dd>3-way sound class</dd></div><div><dt>output</dt><dd>Confusion · RT · confidence</dd></div></dl>
+          <button class="button primary module-start" data-module="lung">Train Lungs</button> <button class="button ghost module-eval" data-module="lung">Blind benchmark</button>
+        </article>
+
+        <article class="module-card echo" data-module="echo">
+          <div class="module-number">03</div>
+          <div class="module-icon">)))</div>
+          <p class="eyebrow">ECHO // SPATIAL</p>
+          <h3>See with sound</h3>
+          <p>Hear a chirp and its reflections, then infer which side contains the nearer boundary. Adapter targets VisualEchoes.</p>
+          <dl><div><dt>v0.2 task</dt><dd>Near wall: left / right</dd></div><div><dt>output</dt><dd>Threshold · RT · confidence</dd></div></dl>
+          <button class="button primary module-start" data-module="echo">Start Echo</button>
+        </article>
+
+        <article class="module-card pulse" data-module="pulse">
+          <div class="module-number">04</div>
+          <div class="module-icon">⌁</div>
+          <p class="eyebrow">PULSE // TACTILE</p>
+          <h3>Feel hemodynamics</h3>
+          <p>Compare arterial waveform morphology. Browser proxy works now; Web Serial is ready for a physical OE Pulse trainer.</p>
+          <dl><div><dt>v0.2 task</dt><dd>More / less arterial stiffness</dd></div><div><dt>hardware</dt><dd>Optional Web Serial</dd></div></dl>
+          <button class="button primary module-start" data-module="pulse">Start Pulse</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="section profile-section" id="profile">
+      <div class="section-head">
+        <div><p class="eyebrow">YOUR DATASHEET</p><h2>Human Instrument Profile</h2></div>
+        <button class="button ghost" id="exportBtn">Export profile JSON</button>
+      </div>
+      <div class="profile-layout">
+        <div class="radar-shell">
+          <canvas id="profileCanvas" width="560" height="420" aria-label="Human Instrument Profile chart"></canvas>
+        </div>
+        <div class="profile-stats" id="profileStats"></div>
+      </div>
+      <p class="fineprint">Prototype scores are training metrics, not medical competency or certification. Data stays in this browser unless you export it.</p>
+    </section>
+
+    <section class="section science" id="science">
+      <p class="eyebrow">OPEN SCIENCE FOUNDATION</p>
+      <h2>Real corpora plug into the same engine.</h2>
+      <div class="dataset-grid" id="datasetGrid"></div>
+      <p class="fineprint">v0.2 streams curated real Heart and Lung recordings from their original open research sources. Echo uses the authentic VisualEchoes chirp with browser-generated geometry; Pulse is wired for real PWDB ingestion and physical hardware.</p>
+    </section>
+
+    <section class="manifesto">
+      <div>
+        <p class="eyebrow">ODD EARTH</p>
+        <h2>Train biology first.<br/>Amplify second.<br/><span>Translate only when necessary.</span></h2>
+      </div>
+      <p>We are building the specification sheet for <em>Homo sapiens</em> — then asking how far it can move.</p>
+    </section>
+  </main>
+
+  <footer>
+    <strong>ODD EARTH</strong>
+    <span>Sensorium v0.2 · real-data prototype</span>
+  </footer>
+
+  <dialog id="trainerDialog">
+    <div class="trainer-shell">
+      <div class="trainer-top">
+        <div><p class="eyebrow" id="trainerEyebrow">MODULE</p><h2 id="trainerTitle">Training</h2></div>
+        <button class="icon-btn" id="closeTrainer" aria-label="Close training">×</button>
+      </div>
+      <div class="trainer-progress"><span id="trialLabel">Trial 1 / 10</span><div><i id="trialProgress"></i></div><span id="difficultyLabel">Difficulty 1</span></div>
+      <div id="trainerStage" class="trainer-stage"></div>
+      <div class="confidence-block" id="confidenceBlock">
+        <label for="confidence">Confidence <b id="confidenceValue">3 / 5</b></label>
+        <input id="confidence" type="range" min="1" max="5" step="1" value="3" />
+      </div>
+      <div id="feedback" class="feedback" aria-live="polite"></div>
+      <div class="trainer-actions" id="trainerActions"></div>
+    </div>
+  </dialog>
+
+  <script src="data/real-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
