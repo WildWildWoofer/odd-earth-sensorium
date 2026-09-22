@@ -11,12 +11,19 @@
   const fresh=()=>({createdAt:new Date().toISOString(),modules:Object.fromEntries(Object.keys(modules).map(k=>[k,{difficulty:.2,sessions:[]}]))});
   let state; try{state=JSON.parse(localStorage.getItem(KEY))||fresh()}catch{state=fresh()}
   let session=null,media=null,audioCtx=null,serialPort=null;
-  const audioCache=new Map();
+  const audioCache=new Map(), htmlAudioCache=new Map();
   const dialog=$('#trainerDialog'),stage=$('#trainerStage'),feedback=$('#feedback'),actions=$('#trainerActions');
 
   const save=()=>{localStorage.setItem(KEY,JSON.stringify(state));renderProfile()};
   const ctx=()=>audioCtx||(audioCtx=new (window.AudioContext||window.webkitAudioContext)());
   const stop=()=>{if(media){try{if(typeof media.stop==='function')media.stop();else if(typeof media.pause==='function'){media.pause();media.currentTime=0}}catch{}media=null}};
+
+  function primeHtmlAudio(item){
+    const url=item.localUrl||item.url;
+    if(!url)return null;
+    if(htmlAudioCache.has(url))return htmlAudioCache.get(url);
+    const a=new Audio();a.preload='auto';a.src=url;a.load();htmlAudioCache.set(url,a);return a;
+  }
 
   async function preloadAudio(item){
     const url=item.localUrl||item.url;
@@ -30,6 +37,7 @@
         return await ctx().decodeAudioData(arr.slice(0));
       }catch(err){
         console.warn('Audio predecode failed; browser audio fallback will be used:',url,err);
+        primeHtmlAudio(item);
         return null;
       }
     })();
@@ -41,6 +49,7 @@
     if(module!=='heart'&&module!=='lung')return;
     const split=mode==='eval'?'eval':'train';
     const pool=(REAL[module]||[]).filter(x=>x.split===split);
+    pool.forEach(primeHtmlAudio);
     await Promise.allSettled(pool.map(preloadAudio));
   }
 
@@ -64,9 +73,10 @@
       source.onended=()=>{if(media===source)media=null};
       return;
     }
-    const a=new Audio(item.localUrl||item.url);media=a;a.preload='auto';
-    a.onloadedmetadata=()=>{try{a.currentTime=start}catch{};a.play();if(end!=null)setTimeout(()=>a.pause(),Math.max(200,(end-start)*1000))};
+    const a=primeHtmlAudio(item);media=a;
+    const go=()=>{try{a.currentTime=start}catch{};const p=a.play();if(p?.catch)p.catch(()=>fallback());if(end!=null)setTimeout(()=>{if(media===a)a.pause()},Math.max(200,(end-start)*1000))};
     a.onerror=()=>fallback();
+    if(a.readyState>=1)go();else a.onloadedmetadata=go;
   }
   function tone(f,t,d=.08,g=.12){const c=ctx(),o=c.createOscillator(),v=c.createGain();o.frequency.value=f;v.gain.setValueAtTime(g,c.currentTime+t);v.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t+d);o.connect(v).connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+d+.02)}
   function fallback(){
