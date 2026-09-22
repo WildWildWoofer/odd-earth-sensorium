@@ -11,11 +11,38 @@
   const fresh=()=>({createdAt:new Date().toISOString(),modules:Object.fromEntries(Object.keys(modules).map(k=>[k,{difficulty:.2,sessions:[]}]))});
   let state; try{state=JSON.parse(localStorage.getItem(KEY))||fresh()}catch{state=fresh()}
   let session=null,media=null,audioCtx=null,serialPort=null;
+  const audioCache=new Map();
   const dialog=$('#trainerDialog'),stage=$('#trainerStage'),feedback=$('#feedback'),actions=$('#trainerActions');
 
   const save=()=>{localStorage.setItem(KEY,JSON.stringify(state));renderProfile()};
   const ctx=()=>audioCtx||(audioCtx=new (window.AudioContext||window.webkitAudioContext)());
-  const stop=()=>{if(media){try{media.pause();media.currentTime=0}catch{}media=null}};
+  const stop=()=>{if(media){try{if(typeof media.stop==='function')media.stop();else if(typeof media.pause==='function'){media.pause();media.currentTime=0}}catch{}media=null}};
+
+  async function preloadAudio(item){
+    const url=item.localUrl||item.url;
+    if(!url)return null;
+    if(audioCache.has(url))return audioCache.get(url);
+    const job=(async()=>{
+      try{
+        const res=await fetch(url,{mode:'cors',cache:'force-cache'});
+        if(!res.ok)throw new Error('HTTP '+res.status);
+        const arr=await res.arrayBuffer();
+        return await ctx().decodeAudioData(arr.slice(0));
+      }catch(err){
+        console.warn('Audio predecode failed; browser audio fallback will be used:',url,err);
+        return null;
+      }
+    })();
+    audioCache.set(url,job);
+    return job;
+  }
+
+  async function warmModule(module,mode){
+    if(module!=='heart'&&module!=='lung')return;
+    const split=mode==='eval'?'eval':'train';
+    const pool=(REAL[module]||[]).filter(x=>x.split===split);
+    await Promise.allSettled(pool.map(preloadAudio));
+  }
 
   function choose(module,label){
     const split=session.mode==='eval'?'eval':'train';
@@ -24,9 +51,20 @@
     const unused=pool.filter(x=>!session.used.has(x.id)), chosen=pick(unused.length?unused:pool);
     session.used.add(chosen.id); return chosen;
   }
-  function remote(item){
-    stop(); const a=new Audio(item.localUrl||item.url); media=a;
-    a.preload='auto'; const start=+item.start||0,end=item.end==null?null:+item.end;
+  async function remote(item){
+    stop();
+    const start=+item.start||0,end=item.end==null?null:+item.end;
+    const buffer=await preloadAudio(item);
+    if(buffer){
+      const c=ctx(),source=c.createBufferSource(),gain=c.createGain();
+      source.buffer=buffer;gain.gain.value=.95;source.connect(gain).connect(c.destination);
+      media=source;
+      const duration=end==null?Math.max(.05,buffer.duration-start):Math.max(.05,end-start);
+      try{source.start(0,start,Math.min(duration,Math.max(.05,buffer.duration-start)))}catch{fallback()}
+      source.onended=()=>{if(media===source)media=null};
+      return;
+    }
+    const a=new Audio(item.localUrl||item.url);media=a;a.preload='auto';
     a.onloadedmetadata=()=>{try{a.currentTime=start}catch{};a.play();if(end!=null)setTimeout(()=>a.pause(),Math.max(200,(end-start)*1000))};
     a.onerror=()=>fallback();
   }
@@ -43,10 +81,17 @@
   function wave(stiff,n=240){const a=[];for(let i=0;i<n;i++){const x=i/(n-1),rise=Math.exp(-Math.pow((x-(.17-.07*stiff))/(.09-.025*stiff),2)),refl=(.2+.45*stiff)*Math.exp(-Math.pow((x-(.46-.12*stiff))/.11,2));a.push(rise+refl)}const m=Math.max(...a);return a.map(v=>v/m)}
   function drawWave(canvas,stiff){const g=canvas.getContext('2d'),v=wave(stiff),w=canvas.width,h=canvas.height;g.clearRect(0,0,w,h);g.strokeStyle='#9df7d1';g.lineWidth=3;g.beginPath();v.forEach((y,i)=>{const x=i*w/(v.length-1),yy=h-15-y*(h-30);i?g.lineTo(x,yy):g.moveTo(x,yy)});g.stroke()}
 
-  function start(module,mode='train'){
+  async function start(module,mode='train'){
     session={module,mode,total:10,i:0,trials:[],difficulty:state.modules[module].difficulty,used:new Set(),answered:false};
     $('#trainerEyebrow').textContent=(module.toUpperCase()+' // '+(mode==='eval'?'BLIND BENCHMARK':'TRAINING'));
-    $('#trainerTitle').textContent=modules[module].title; $('#confidenceBlock').style.display='block';dialog.showModal();next();
+    $('#trainerTitle').textContent=modules[module].title; $('#confidenceBlock').style.display='block';dialog.showModal();
+    if(module==='heart'||module==='lung'){
+      try{await ctx().resume()}catch{}
+      stage.innerHTML='<div class="task-instruction"><p class="eyebrow">PREPARING SESSION</p><h3>Loading recordings into memory…</h3><p>One short preload now removes the pause between trials.</p></div>';
+      actions.innerHTML='';feedback.textContent='';
+      await warmModule(module,mode);
+    }
+    next();
   }
   function next(){
     stop();session.answered=false;feedback.textContent='';feedback.className='feedback';actions.innerHTML='';$('#confidence').value=3;$('#confidenceValue').textContent='3 / 5';
@@ -66,7 +111,7 @@
       drawWave($('#wa'),a);drawWave($('#wb'),b);$('#serialBtn').onclick=connectSerial;$('#sendBtn').onclick=sendPulse;
     }else{
       stage.innerHTML=`<div class="task-instruction"><h3>${m.prompt}</h3><p class="data-mode">${t.dataMode==='real'?'● REAL RESEARCH RECORDING':t.dataMode==='hybrid'?'◐ REAL-WORLD ACOUSTIC TASK':'○ PROCEDURAL FALLBACK'}</p><button class="play-btn" id="playStimulus">▶</button><div class="answer-grid ${m.choices.length===3?'three':''}">${answers}</div></div>`;
-      $('#playStimulus').onclick=()=>{if(!t.playedAt)t.playedAt=performance.now();if(t.sample)remote(t.sample);else if(session.module==='echo')playEcho(t.correct,t.difficulty);else fallback()};
+      $('#playStimulus').onclick=async()=>{if(!t.playedAt)t.playedAt=performance.now();if(t.sample)await remote(t.sample);else if(session.module==='echo')playEcho(t.correct,t.difficulty);else fallback()};
     }
     $$('.answer-btn',stage).forEach(b=>b.onclick=()=>answer(b.dataset.a));
   }
